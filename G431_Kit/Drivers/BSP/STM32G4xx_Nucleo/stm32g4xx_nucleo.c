@@ -573,11 +573,11 @@ size_t __write(int file, unsigned char const *ptr, size_t len)
 /**
   * @brief  Redirect console output to COM
   */
-PUTCHAR_PROTOTYPE
-{
-  (void) HAL_UART_Transmit(&hcom_uart [COM_ActiveLogPort], (uint8_t *) &ch, 1, COM_POLL_TIMEOUT);
-  return ch;
-}
+//PUTCHAR_PROTOTYPE
+//{
+//  (void) HAL_UART_Transmit(&hcom_uart [COM_ActiveLogPort], (uint8_t *) &ch, 1, COM_POLL_TIMEOUT);
+//  return ch;
+//}
 #endif /* USE_COM_LOG */
 #endif /* (USE_BSP_COM_FEATURE > 0) */
 
