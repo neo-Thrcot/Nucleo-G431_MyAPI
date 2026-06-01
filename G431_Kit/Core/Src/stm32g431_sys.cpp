@@ -7,8 +7,8 @@
 
 #include <stm32g431_sys.h>
 
-static uint32_t preTick = 0;
-static uint32_t tickCarry = 0;
+static volatile uint32_t preTick = 0;
+static volatile uint32_t tickCarry = 0;
 
 void RCC_Init(void)
 {
@@ -22,7 +22,8 @@ void RCC_Init(void)
 
 	/*Flash access latency : 4 wait state*/
 	FLASH->ACR &= ~FLASH_ACR_LATENCY;
-	FLASH->ACR |= FLASH_ACR_LATENCY_4WS;
+	FLASH->ACR |= FLASH_ACR_DCEN | FLASH_ACR_ICEN | FLASH_ACR_PRFTEN |
+				  FLASH_ACR_LATENCY_4WS;
 	while((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_ACR_LATENCY_4WS);
 
 	/*PLL config*/
@@ -53,7 +54,7 @@ void RCC_Init(void)
 
 	preTick = DWT->CYCCNT;
 
-	SysTick->LOAD = (AHBCLK / 1500) - 1;
+	SysTick->LOAD = (AHBCLK / 1000) - 1;
 	SysTick->VAL = 0;
 	SysTick->CTRL |= SysTick_CTRL_CLKSOURCE_Msk |
 				     SysTick_CTRL_TICKINT_Msk |
@@ -68,14 +69,28 @@ void IncTick(void)
 	preTick = DWT->CYCCNT;
 }
 
+uint64_t GetTick(void)
+{
+	uint32_t tick;
+	uint32_t prev = preTick;
+	uint32_t carry = tickCarry;
+
+	tick = DWT->CYCCNT;
+	if(tick < prev) {
+		carry++;
+	}
+
+	return FULLTICK(carry, tick);
+}
+
 uint64_t millis(void)
 {
-	return FULLTICK(tickCarry, DWT->CYCCNT) / 170000;
+	return GetTick() / 170000;
 }
 
 uint64_t micros(void)
 {
-	return FULLTICK(tickCarry, DWT->CYCCNT) / 170;
+	return GetTick() / 170;
 }
 
 void delay_ms(uint64_t ms)

@@ -36,7 +36,7 @@ typedef void (*CallbackFunc_t)(void);
 void RCC_Init(void);
 
 void IncTick(void);
-uint64_t GetTick_64(void);
+uint64_t GetTick(void);
 
 uint64_t millis(void);
 uint64_t micros(void);
