@@ -60,8 +60,8 @@ class I2C
 
 		void masterInit(uint8_t devaddr, uint8_t size, bool autoend, bool reload, bool wr);
 		void masterReload(uint8_t size, bool reload);
-		SysError_t masterWriteBuf(uint8_t* databuf, uint8_t datasize, uint8_t nbytes, uint64_t timeout_ms, uint64_t start_ms);
-		SysError_t masterReadBuf(uint8_t* databuf, uint8_t datasize, uint8_t nbytes, uint64_t timeout_ms, uint64_t start_ms);
+		SysError_t masterWriteBuf(uint8_t* databuf, uint16_t datasize, uint8_t nbytes, uint64_t timeout_ms, uint64_t start_ms);
+		SysError_t masterReadBuf(uint8_t* databuf, uint16_t datasize, uint8_t nbytes, uint64_t timeout_ms, uint64_t start_ms);
 };
 
 #endif /* INC_STM32G431_I2C_H_ */

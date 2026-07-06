@@ -75,8 +75,9 @@ bool I2C::addressMatch(uint8_t devaddr)
 {
 	uint32_t isr;
 
-	masterInit(devaddr, 0, false, false, false);
+	ch->ICR = I2C_ICR_BERRCF;
 
+	masterInit(devaddr, 0, false, false, false);
 	ch->CR2 |= I2C_CR2_START;
 
     while(1) {
@@ -111,6 +112,8 @@ SysError_t I2C::masterTransmit(uint8_t devaddr,
 	uint8_t nbytes;
 	SysError_t states;
 
+	ch->ICR = I2C_ICR_BERRCF;
+
 	if(datasize > 255) {
 		nbytes = 255;
 		masterInit(devaddr, nbytes, true, true, false);
@@ -127,6 +130,7 @@ SysError_t I2C::masterTransmit(uint8_t devaddr,
 
 	while(!(ch->ISR & I2C_ISR_STOPF));
 	ch->ICR = I2C_ICR_STOPCF;
+	while(ch->ISR & I2C_ISR_STOPF);
 
 	return SYS_OK;
 }
@@ -139,6 +143,8 @@ SysError_t I2C::masterReceive(uint8_t devaddr,
 	uint64_t start_ms = millis();
 	uint8_t nbytes;
 	SysError_t states;
+
+	ch->ICR = I2C_ICR_BERRCF;
 
 	if(datasize > 255) {
 		nbytes = 255;
@@ -160,6 +166,7 @@ SysError_t I2C::masterReceive(uint8_t devaddr,
 
 	while(!(ch->ISR & I2C_ISR_STOPF));
 	ch->ICR = I2C_ICR_STOPCF;
+	while(ch->ISR & I2C_ISR_STOPF);
 
 	return SYS_OK;
 }
@@ -176,6 +183,8 @@ SysError_t I2C::memWrite(uint8_t devaddr,
 	uint8_t regaddr_buf[2];
 	SysError_t states;
 
+	ch->ICR = I2C_ICR_BERRCF;
+
 	if(is_16bitaddr == true) {
 		regaddr_buf[0] = regaddr >> 8;
 		regaddr_buf[1] = regaddr & 0xFF;
@@ -208,13 +217,9 @@ SysError_t I2C::memWrite(uint8_t devaddr,
 
 	if(datasize > 255) {
 		nbytes = 255;
-	} else {
-		nbytes = datasize;
-	}
-
-	if(datasize > 255) {
 		masterInit(devaddr, nbytes, true, true, false);
 	} else {
+		nbytes = datasize;
 		masterInit(devaddr, nbytes, true, false, false);
 	}
 	ch->CR2 |= I2C_CR2_START;
@@ -226,6 +231,7 @@ SysError_t I2C::memWrite(uint8_t devaddr,
 
 	while(!(ch->ISR & I2C_ISR_STOPF));
 	ch->ICR = I2C_ICR_STOPCF;
+	while(ch->ISR & I2C_ISR_STOPF);
 
 	return SYS_OK;
 }
@@ -242,6 +248,8 @@ SysError_t I2C::memRead(uint8_t devaddr,
 	uint8_t regaddr_buf[2];
 	SysError_t states;
 
+	ch->ICR = I2C_ICR_BERRCF;
+
 	if(is_16bitaddr == true) {
 		regaddr_buf[0] = regaddr >> 8;
 		regaddr_buf[1] = regaddr & 0xFF;
@@ -274,13 +282,9 @@ SysError_t I2C::memRead(uint8_t devaddr,
 
 	if(datasize > 255) {
 		nbytes = 255;
-	} else {
-		nbytes = datasize;
-	}
-
-	if(datasize > 255) {
 		masterInit(devaddr, nbytes, true, true, true);
 	} else {
+		nbytes = datasize;
 		masterInit(devaddr, nbytes, true, false, true);
 	}
 	ch->CR2 |= I2C_CR2_START;
@@ -416,7 +420,7 @@ void I2C::masterReload(uint8_t size, bool reload)
 }
 
 SysError_t I2C::masterWriteBuf(uint8_t* databuf,
-							   uint8_t datasize,
+							   uint16_t datasize,
 							   uint8_t nbytes,
 							   uint64_t timeout_ms,
 							   uint64_t start_ms)
@@ -464,7 +468,7 @@ SysError_t I2C::masterWriteBuf(uint8_t* databuf,
 }
 
 SysError_t I2C::masterReadBuf(uint8_t* databuf,
-							  uint8_t datasize,
+							  uint16_t datasize,
 							  uint8_t nbytes,
 							  uint64_t timeout_ms,
 							  uint64_t start_ms)
