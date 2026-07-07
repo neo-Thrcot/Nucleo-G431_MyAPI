@@ -93,9 +93,7 @@ int main(void)
 
 SysError_t writeReg(uint8_t reg, uint8_t val)
 {
-	uint8_t sendbuf[] = {reg, val};
-
-	return i2c1.masterTransmit(LSM6_ADDR, sendbuf, 2, 500);
+	return i2c1.memWrite(LSM6_ADDR, reg, false, &val, 1, 500);
 }
 
 SysError_t readRegs(uint8_t reg, uint8_t* databuf, uint8_t datasize)

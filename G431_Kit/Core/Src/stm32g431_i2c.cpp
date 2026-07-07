@@ -194,7 +194,7 @@ SysError_t I2C::memWrite(uint8_t devaddr,
 		regaddr_size = 1;
 	}
 
-	masterInit(devaddr, regaddr_size, false, false, false);
+	masterInit(devaddr, regaddr_size, false, true, false);
 	ch->CR2 |= I2C_CR2_START;
 
 	states = masterWriteBuf(regaddr_buf, regaddr_size, regaddr_size, timeout_ms, start_ms);
@@ -217,10 +217,10 @@ SysError_t I2C::memWrite(uint8_t devaddr,
 
 	if(datasize > 255) {
 		nbytes = 255;
-		masterInit(devaddr, nbytes, true, true, false);
+		masterReload(nbytes, true);
 	} else {
 		nbytes = datasize;
-		masterInit(devaddr, nbytes, true, false, false);
+		masterReload(nbytes, false);
 	}
 	ch->CR2 |= I2C_CR2_START;
 
